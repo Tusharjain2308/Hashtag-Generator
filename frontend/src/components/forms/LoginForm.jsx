@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/Button.jsx";
 import { Input } from "../ui/Input.jsx";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import { Label } from "../ui/Label.jsx";
 import api from "../../utils/api.js";
 import { API_PATHS } from "../../utils/apiPaths.js";
@@ -24,6 +24,17 @@ export default function LoginForm({ onSwitchToSignup }) {
         email,
         password,
       });
+
+      // Store token in localStorage
+      const token = response?.data?.token;
+      if (token) {
+        localStorage.setItem("token", token);
+        console.log("Login Success", token);
+        navigate("/home");
+      } else {
+        throw new Error("Token not found in response");
+      }
+
       console.log("Login Success", response.data);
       navigate("/home");
     } catch (error) {
@@ -32,8 +43,6 @@ export default function LoginForm({ onSwitchToSignup }) {
     } finally {
       setLoading(false);
     }
-
-    
   };
 
   return (

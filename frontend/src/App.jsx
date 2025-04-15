@@ -5,9 +5,9 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import Home from "./pages/Home";
-import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignUpPage";
+import Home from "./pages/Home.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import SignupPage from "./pages/SignUpPage.jsx";
 
 function App() {
   return (
@@ -29,8 +29,8 @@ const Root = () => {
   const isAuthenticated = !!localStorage.getItem("token");
 
   return isAuthenticated ? (
-    <Navigate to="/home" />
-  ) : (
     <Navigate to="/login" />
+  ) : (
+    <Navigate to="/home" />
   );
 };

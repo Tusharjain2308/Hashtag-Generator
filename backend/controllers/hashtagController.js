@@ -1,20 +1,19 @@
 const Hashtag = require("../models/Hashtags");
 const User = require("../models/User");
-const generateHashtags = require("../services/genAIservice");  // Import the AI service
+const generateHashtags = require("../services/genAIservice"); // Import the AI service
 
 // @desc    Generate hashtags and save to user's history
 // @route   POST /api/hashtags/generate
 // @access  Private
 exports.generateHashtags = async (req, res) => {
-  const { platform, postType, location, topic, vibe, description, count } = req.body;
+  const { platform, postType, location, topic, vibe, description, count } =
+    req.body;
 
-  // Input validation
   if (!platform || !postType || !topic || !vibe || !count) {
     return res.status(400).json({ error: "Please fill all required fields." });
   }
 
   try {
-    // Create input data for AI-based hashtag generation
     const userInput = {
       platform,
       postType,
@@ -22,17 +21,18 @@ exports.generateHashtags = async (req, res) => {
       topic,
       vibe,
       description,
-      count
+      count,
     };
 
-    // Call the Gemini API to generate hashtags
+    // Call Gemini
     const generatedHashtags = await generateHashtags(userInput);
-
+    console.log("The hashtags generated are : " , generatedHashtags);
+    
     if (generatedHashtags.length === 0) {
       return res.status(500).json({ error: "No hashtags were generated." });
     }
 
-    // Create and save hashtag history
+    // Save to DB
     const newHashtag = new Hashtag({
       owner: req.user._id,
       platform,
@@ -47,14 +47,17 @@ exports.generateHashtags = async (req, res) => {
 
     await newHashtag.save();
 
-    // Add to user's history
+    // Push to user history
     const user = await User.findById(req.user._id);
     user.history.push(newHashtag._id);
     await user.save();
 
-    // Return success response with the generated hashtags
-    res.status(201).json({ message: "Hashtags generated and saved!", data: newHashtag });
+    // ✅ Send only one response
+    res
+      .status(201)
+      .json({ message: "Hashtags generated and saved!", data: generatedHashtags });
   } catch (error) {
+    console.error("Error in generateHashtags:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -64,7 +67,9 @@ exports.generateHashtags = async (req, res) => {
 // @access  Private
 exports.getHashtagHistory = async (req, res) => {
   try {
-    const hashtags = await Hashtag.find({ owner: req.user._id }).sort({ createdAt: -1 });
+    const hashtags = await Hashtag.find({ owner: req.user._id }).sort({
+      createdAt: -1,
+    });
     res.status(200).json(hashtags);
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
-import { motion, useMotionTemplate, useMotionValue, animate } from "framer-motion";
+import {
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  animate,
+} from "framer-motion";
 import axios from "axios";
 import { Canvas } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
-import { API_PATHS } from "../../utils/apiPaths";
+import { API_PATHS } from "../../utils/apiPaths.js";
 
 const COLORS_TOP = ["#13FFAA", "#1E67C6", "#CE84CF", "#DD335C"];
 
@@ -30,9 +35,15 @@ export default function HashtagForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post(API_PATHS.HASHTAGS.GENERATE, {formData});
-      const data = response.data?.data?.hashtags;
-      setHashtags(data?.join(" ") || "No hashtags generated.");
+      const token = localStorage.getItem("token"); // Adjust based on your storage strategy
+
+      const response = await axios.post(API_PATHS.HASHTAGS.GENERATE, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setHashtags(response?.data?.data?.join(" ") || "No hashtags generated.");
     } catch (error) {
       setHashtags("Something went wrong.");
       console.error(error);
@@ -86,18 +97,28 @@ export default function HashtagForm() {
           transition={{ duration: 1 }}
         >
           <FormRow label="Platform">
-            <StyledSelect name="platform" value={formData.platform} onChange={handleChange} required>
+            <StyledSelect
+              name="platform"
+              value={formData.platform}
+              onChange={handleChange}
+              required
+            >
               <option value="">Select platform</option>
-              <option >Instagram</option>
-              <option >Twitter</option>
-              <option >LinkedIn</option>
-              <option >Facebook</option>
-              <option >YouTube</option>
+              <option>Instagram</option>
+              <option>Twitter</option>
+              <option>LinkedIn</option>
+              <option>Facebook</option>
+              <option>YouTube</option>
             </StyledSelect>
           </FormRow>
 
           <FormRow label="Post Type">
-            <StyledSelect name="postType" value={formData.postType} onChange={handleChange} required>
+            <StyledSelect
+              name="postType"
+              value={formData.postType}
+              onChange={handleChange}
+              required
+            >
               <option value="">Choose type</option>
               <option>Reel</option>
               <option>Story</option>
@@ -108,23 +129,57 @@ export default function HashtagForm() {
           </FormRow>
 
           <FormRow label="Location (optional)">
-            <StyledInput type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. Delhi" />
+            <StyledInput
+              type="text"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              placeholder="e.g. Delhi"
+            />
           </FormRow>
 
           <FormRow label="Topic">
-            <StyledInput type="text" name="topic" value={formData.topic} onChange={handleChange} required placeholder="e.g. Travel, Fashion" />
+            <StyledInput
+              type="text"
+              name="topic"
+              value={formData.topic}
+              onChange={handleChange}
+              required
+              placeholder="e.g. Travel, Fashion"
+            />
           </FormRow>
 
           <FormRow label="Vibe">
-            <StyledInput type="text" name="vibe" value={formData.vibe} onChange={handleChange} required placeholder="e.g. Chill, Aesthetic" />
+            <StyledInput
+              type="text"
+              name="vibe"
+              value={formData.vibe}
+              onChange={handleChange}
+              required
+              placeholder="e.g. Chill, Aesthetic"
+            />
           </FormRow>
 
           <FormRow label="Description (optional)">
-            <StyledTextarea name="description" rows={3} value={formData.description} onChange={handleChange} placeholder="Describe your post..." />
+            <StyledTextarea
+              name="description"
+              rows={3}
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Describe your post..."
+            />
           </FormRow>
 
           <FormRow label={`Hashtag Count (${formData.count})`}>
-            <input type="range" name="count" min="1" max="30" value={formData.count} onChange={handleChange} className="w-full accent-pink-500" />
+            <input
+              type="range"
+              name="count"
+              min="1"
+              max="30"
+              value={formData.count}
+              onChange={handleChange}
+              className="w-full accent-pink-500"
+            />
           </FormRow>
 
           <div className="flex justify-center pt-4">
@@ -146,7 +201,9 @@ export default function HashtagForm() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <p className="text-pink-400 font-semibold mb-2">Generated Hashtags:</p>
+            <p className="text-pink-400 font-semibold mb-2">
+              Generated Hashtags:
+            </p>
             <p className="text-white break-words">{hashtags}</p>
           </motion.div>
         )}
@@ -159,7 +216,9 @@ export default function HashtagForm() {
 function FormRow({ label, children }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-      <label className="w-full sm:w-40 text-pink-300 font-bold text-md">{label}</label>
+      <label className="w-full sm:w-40 text-pink-300 font-bold text-md">
+        {label}
+      </label>
       <div className="flex-1">{children}</div>
     </div>
   );

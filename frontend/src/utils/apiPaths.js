@@ -1,4 +1,4 @@
-export const BASE_URL="http://localhost:8000/"
+export const BASE_URL="http://localhost:8000"
 
 export const API_PATHS = {
     AUTH : {
@@ -7,7 +7,7 @@ export const API_PATHS = {
         USER_INFO : '/api/auth/me',
     }, 
     HASHTAGS : {
-        GENERATE : '/api/hashtags/generate',
+        GENERATE : `${BASE_URL}/api/hashtags/generate`,
         HISTORY : '/api/hashtags/history',
         GET_SINGLE_HASHTAG : (hashId) => `/api/hashtags/${hashId}`,
         DELETE : (hashId) => `/api/hashtags/${hashId}`,

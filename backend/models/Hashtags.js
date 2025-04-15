@@ -18,7 +18,7 @@ const HashtagSchema = new mongoose.Schema(
     // Type of post (Image, Reel, Story, Text, etc)
     postType: {
       type: String,
-      enum: ["Image", "Video", "Story", "Text", "Reel", "Other"],
+      enum: ["Image", "Video", "Story", "Text", "Reel", "Post","Other"],
       required: true,
     },
 
