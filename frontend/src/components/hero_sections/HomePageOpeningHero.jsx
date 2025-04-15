@@ -36,6 +36,7 @@ export function OpeningHero() {
           backgroundColor: 0x000011,
           amplitudeFactor: 2.0,
           size: 1.0,
+          
         })
         setVantaEffect(effect)
         setTimeout(() => setIsLoaded(true), 500)

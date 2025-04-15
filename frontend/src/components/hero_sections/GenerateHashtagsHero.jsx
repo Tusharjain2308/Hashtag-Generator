@@ -1,7 +1,11 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, useMotionTemplate, useMotionValue, animate } from "framer-motion";
 import axios from "axios";
+import { Canvas } from "@react-three/fiber";
+import { Stars } from "@react-three/drei";
 import { API_PATHS } from "../../utils/apiPaths";
+
+const COLORS_TOP = ["#13FFAA", "#1E67C6", "#CE84CF", "#DD335C"];
 
 export default function HashtagForm() {
   const [formData, setFormData] = useState({
@@ -26,7 +30,7 @@ export default function HashtagForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post(API_PATHS.HASHTAGS.GENERATE, formData);
+      const response = await axios.post(API_PATHS.HASHTAGS.GENERATE, {formData});
       const data = response.data?.data?.hashtags;
       setHashtags(data?.join(" ") || "No hashtags generated.");
     } catch (error) {
@@ -37,14 +41,34 @@ export default function HashtagForm() {
     }
   };
 
+  // Aurora Background Animation Logic
+  const color = useMotionValue(COLORS_TOP[0]);
+
+  useEffect(() => {
+    animate(color, COLORS_TOP, {
+      ease: "easeInOut",
+      duration: 10,
+      repeat: Infinity,
+      repeatType: "mirror",
+    });
+  }, []);
+
+  const backgroundImage = useMotionTemplate`radial-gradient(125% 125% at 50% 0%, #020617 50%, ${color})`;
+
   return (
-    <section className="relative min-h-screen py-24 px-4 sm:px-10 bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-hidden">
-      {/* Gradient Background Glow */}
-      <div className="absolute inset-0 -z-10 flex justify-center items-center">
-        <div className="w-[700px] h-[700px] bg-purple-700/20 blur-[120px] rounded-full"></div>
+    <motion.section
+      style={{ backgroundImage }}
+      className="relative min-h-screen py-24 px-4 sm:px-10 text-white overflow-hidden"
+    >
+      {/* Star Background */}
+      <div className="absolute inset-0 z-0">
+        <Canvas>
+          <Stars radius={50} count={2500} factor={4} fade speed={2} />
+        </Canvas>
       </div>
 
-      <div className="max-w-4xl mx-auto">
+      {/* Form Content */}
+      <div className="relative z-10 max-w-4xl mx-auto">
         <motion.h2
           className="text-center text-4xl sm:text-5xl font-bold mb-12 text-white drop-shadow-md"
           initial={{ opacity: 0, y: 20 }}
@@ -127,15 +151,15 @@ export default function HashtagForm() {
           </motion.div>
         )}
       </div>
-    </section>
+    </motion.section>
   );
 }
 
 // Label-Input Row
 function FormRow({ label, children }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-      <label className="w-full sm:w-40 text-pink-300 font-medium text-sm">{label}</label>
+    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+      <label className="w-full sm:w-40 text-pink-300 font-bold text-md">{label}</label>
       <div className="flex-1">{children}</div>
     </div>
   );
