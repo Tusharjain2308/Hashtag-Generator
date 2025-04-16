@@ -120,3 +120,34 @@ exports.deleteHashtag = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// @desc    Get account information and hashtag history
+// @route   GET /api/user/account
+// @access  Private
+exports.getAccountInformation = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .select("-password") // remove password from the result
+      .populate({
+        path: "history",
+        options: { sort: { createdAt: -1 } }, // sort latest first
+      });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const accountInfo = {
+      username: user.username || "",
+      name: user.name || "",
+      email: user.email,
+      createdAt: user.createdAt,
+      history: user.history, // this includes all hashtags generated
+    };
+
+    res.status(200).json(accountInfo);
+  } catch (error) {
+    console.error("Error in getAccountInformation:", error);
+    res.status(500).json({ error: error.message });
+  }
+};

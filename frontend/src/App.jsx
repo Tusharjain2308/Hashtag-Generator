@@ -8,6 +8,7 @@ import {
 import Home from "./pages/Home.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import SignupPage from "./pages/SignUpPage.jsx";
+import AccountPage from "./pages/AccountPage.jsx"
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<SignupPage />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/account" element={<AccountPage/>} />
       </Routes>
     </Router>
   );
@@ -29,8 +31,8 @@ const Root = () => {
   const isAuthenticated = !!localStorage.getItem("token");
 
   return isAuthenticated ? (
-    <Navigate to="/login" />
-  ) : (
     <Navigate to="/home" />
+  ) : (
+    <Navigate to="/login" />
   );
 };

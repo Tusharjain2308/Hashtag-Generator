@@ -101,7 +101,7 @@ export default function HashtagForm() {
               name="platform"
               value={formData.platform}
               onChange={handleChange}
-              required
+              required autoFocus
             >
               <option value="">Select platform</option>
               <option>Instagram</option>
@@ -196,17 +196,25 @@ export default function HashtagForm() {
 
         {hashtags && (
           <motion.div
-            className="mt-10 p-6 bg-white/5 border border-white/10 rounded-xl text-white text-lg shadow-inner"
+            className="mt-10 p-6 bg-white/5 border border-white/10 rounded-xl text-white text-lg shadow-inner text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <p className="text-pink-400 font-semibold mb-2">
-              Generated Hashtags:
+            <p className="text-pink-400 text-xl font-extrabold mb-2">
+              Generated Hashtags
             </p>
-            <p className="text-white break-words">{hashtags}</p>
+            <p
+              className="cursor-pointer font-bold text-2xl text-white break-words"
+              onClick={() => navigator.clipboard.writeText(hashtags)}
+              title="Click to copy hashtags"
+            >
+              {hashtags}
+            </p>
+            <p className="text-sm text-pink-300 mt-2">(Click on the hashtags to copy)</p>
           </motion.div>
         )}
+
       </div>
     </motion.section>
   );

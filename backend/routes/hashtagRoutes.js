@@ -5,6 +5,7 @@ const {
   getHashtagHistory,
   getSingleHashtag,
   deleteHashtag,
+  getAccountInformation,
 } = require("../controllers/hashtagController");
 const { protect } = require("../middlewares/authMiddleware");
 
@@ -27,5 +28,7 @@ router.get("/:id", protect, getSingleHashtag);
 // @desc    Delete hashtag history item
 // @access  Private
 router.delete("/:id", protect, deleteHashtag);
+
+router.get("/account", protect, getAccountInformation);
 
 module.exports = router;
