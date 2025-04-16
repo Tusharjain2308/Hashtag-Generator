@@ -139,12 +139,13 @@ exports.getAccountInformation = async (req, res) => {
 
     const accountInfo = {
       username: user.username || "",
-      name: user.name || "",
+      name: user.firstname || "",
       email: user.email,
       createdAt: user.createdAt,
       history: user.history, // this includes all hashtags generated
     };
 
+    console.log("Account info",accountInfo);
     res.status(200).json(accountInfo);
   } catch (error) {
     console.error("Error in getAccountInformation:", error);

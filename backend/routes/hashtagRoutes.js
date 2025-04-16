@@ -14,6 +14,8 @@ const { protect } = require("../middlewares/authMiddleware");
 // @access  Private
 router.post("/generate", protect, generateHashtags);
 
+router.get("/account", protect, getAccountInformation);
+
 // @route   GET /api/hashtags/history
 // @desc    Get all hashtag generations by user
 // @access  Private
@@ -29,6 +31,6 @@ router.get("/:id", protect, getSingleHashtag);
 // @access  Private
 router.delete("/:id", protect, deleteHashtag);
 
-router.get("/account", protect, getAccountInformation);
+
 
 module.exports = router;
