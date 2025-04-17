@@ -130,15 +130,16 @@ export function OpeningHero() {
           <motion.button
             className="px-8 py-4 rounded-xl bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-700 hover:to-pink-600 text-white font-medium transition duration-300 shadow-lg shadow-pink-600/30 hover:shadow-pink-600/50 transform hover:-translate-y-1"
             whileTap={{ scale: 0.97 }}
+            onClick={scrollToContent}
           >
             Try it Now
           </motion.button>
-          <motion.button
+          {/* <motion.button
             className="px-8 py-4 rounded-xl bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/30 font-medium transition duration-300 shadow-lg transform hover:-translate-y-1"
             whileTap={{ scale: 0.97 }}
           >
             Learn More
-          </motion.button>
+          </motion.button> */}
         </motion.div>
       </motion.div>
 
