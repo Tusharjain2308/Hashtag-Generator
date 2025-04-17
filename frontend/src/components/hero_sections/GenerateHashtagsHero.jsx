@@ -106,7 +106,6 @@ export default function HashtagForm() {
               <option value="">Select platform</option>
               <option>Instagram</option>
               <option>Twitter</option>
-              <option>LinkedIn</option>
               <option>Facebook</option>
               <option>YouTube</option>
             </StyledSelect>
@@ -122,6 +121,7 @@ export default function HashtagForm() {
               <option value="">Choose type</option>
               <option>Reel</option>
               <option>Story</option>
+              <option>Video</option>
               <option>Post</option>
               <option>Short</option>
               <option>Tweet</option>
@@ -216,6 +216,10 @@ export default function HashtagForm() {
         )}
 
       </div>
+
+      <div className="mt-8 text-center text-gray-400 text-sm">
+          <p>© 2025 HashPop. All rights reserved.</p>
+        </div>
     </motion.section>
   );
 }

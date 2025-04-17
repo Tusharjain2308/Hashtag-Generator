@@ -6,7 +6,7 @@ import { Input } from "../ui/Input.jsx";
 import { Label } from "../ui/Label.jsx";
 import api from "../../utils/api.js";
 import { API_PATHS } from "../../utils/apiPaths.js";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 export default function SignupForm({ onSwitchToLogin }) {
   const [firstname, setfirstname] = useState("");
@@ -32,6 +32,18 @@ export default function SignupForm({ onSwitchToLogin }) {
 
     setLoading(true);
     try {
+      if (
+        !firstname ||
+        !lastname ||
+        !username ||
+        !email ||
+        !password ||
+        !confirmPassword
+      ) {
+        setError("Please fill in all the fields.");
+        return;
+      }
+
       const response = await api.post(API_PATHS.AUTH.REGISTER, {
         firstname,
         lastname,
@@ -43,10 +55,9 @@ export default function SignupForm({ onSwitchToLogin }) {
       console.log("Signup Success", response.data);
       setSuccess("Account created successfully!");
       navigate("/home");
-
     } catch (err) {
       console.error(err);
-      setError("Something went wrong. Try again.");
+      setError("Something went wrong. Try again");
     } finally {
       setLoading(false);
     }
@@ -54,7 +65,13 @@ export default function SignupForm({ onSwitchToLogin }) {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+      <h2 className="text-4xl font-extrabold text-purple-500 text-center mb-2 tracking-wide">
+        Hash<span className="text-white">Pop</span>
+      </h2>
+      <p className="text-center text-sm text-gray-400 mb-6">
+        Enter the details and dive straight into HashPop
+      </p>
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-white">Create account</h1>
         <Button
           variant="ghost"

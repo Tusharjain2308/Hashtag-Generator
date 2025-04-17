@@ -2,19 +2,21 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/Button.jsx";
 import { Input } from "../ui/Input.jsx";
-import { useNavigate } from "react-router-dom";
 import { Label } from "../ui/Label.jsx";
+import { useNavigate } from "react-router-dom";
 import api from "../../utils/api.js";
 import { API_PATHS } from "../../utils/apiPaths.js";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginForm({ onSwitchToSignup }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handlelogin = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -25,7 +27,6 @@ export default function LoginForm({ onSwitchToSignup }) {
         password,
       });
 
-      // Store token in localStorage
       const token = response?.data?.token;
       if (token) {
         localStorage.setItem("token", token);
@@ -34,11 +35,8 @@ export default function LoginForm({ onSwitchToSignup }) {
       } else {
         throw new Error("Token not found in response");
       }
-
-      console.log("Login Success", response.data);
-      navigate("/home");
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       setError("Invalid username or password");
     } finally {
       setLoading(false);
@@ -46,20 +44,19 @@ export default function LoginForm({ onSwitchToSignup }) {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-white">Welcome back</h1>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-gray-400 hover:text-white"
-          onClick={onSwitchToSignup}
-        >
-          Sign up
-        </Button>
-      </div>
+    <div className="p-8 max-w-md mx-auto">
+      {/* Logo or Title */}
+      <h2 className="text-4xl font-extrabold text-purple-500 text-center mb-2 tracking-wide">
+        Hash<span className="text-white">Pop</span>
+      </h2>
 
-      <form className="space-y-4" onSubmit={handlelogin}>
+      <p className="text-center text-sm text-gray-400 mb-8">
+        Welcome back! Please enter your credentials.
+      </p>
+
+      {/* Login Form */}
+      <form onSubmit={handleLogin} className="space-y-5">
+        {/* Email Field */}
         <div className="space-y-2">
           <Label htmlFor="email" className="text-gray-300">
             Email
@@ -70,9 +67,11 @@ export default function LoginForm({ onSwitchToSignup }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="name@example.com"
-            className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-400/20"
+            className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-400/20 mt-1"
           />
         </div>
+
+        {/* Password Field */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password" className="text-gray-300">
@@ -85,15 +84,26 @@ export default function LoginForm({ onSwitchToSignup }) {
               Forgot password?
             </button>
           </div>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-400/20"
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"} // 👈 Toggle type
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-400/20 pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)} // 👈 Toggle visibility
+              className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-purple-400"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
         </div>
 
+        {/* Error Display */}
         <AnimatePresence>
           {error && (
             <motion.p
@@ -107,6 +117,7 @@ export default function LoginForm({ onSwitchToSignup }) {
           )}
         </AnimatePresence>
 
+        {/* Submit Button */}
         <Button
           type="submit"
           disabled={loading}
@@ -116,8 +127,9 @@ export default function LoginForm({ onSwitchToSignup }) {
         </Button>
       </form>
 
+      {/* Switch to Signup */}
       <div className="mt-6 text-center text-sm text-gray-400">
-        Don't have an account?{" "}
+        Don’t have an account?{" "}
         <button
           onClick={onSwitchToSignup}
           className="text-purple-400 hover:text-purple-300 font-medium transition-colors"

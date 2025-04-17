@@ -51,7 +51,7 @@ export default function AuthLayout() {
         </motion.div>
 
         <div className="mt-8 text-center text-gray-400 text-sm">
-          <p>© 2025 Your Company. All rights reserved.</p>
+          <p>© 2025 HashPop. All rights reserved.</p>
         </div>
       </div>
     </div>

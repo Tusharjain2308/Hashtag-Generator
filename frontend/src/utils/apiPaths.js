@@ -9,8 +9,6 @@ export const API_PATHS = {
     HASHTAGS : {
         GENERATE : `${BASE_URL}/api/hashtags/generate`,
         ACCOUNT_INFO : `${BASE_URL}/api/hashtags/account`,
-        HISTORY : '/api/hashtags/history',
-        GET_SINGLE_HASHTAG : (hashId) => `/api/hashtags/${hashId}`,
         DELETE : (hashId) => `/api/hashtags/${hashId}`,
     }
 }

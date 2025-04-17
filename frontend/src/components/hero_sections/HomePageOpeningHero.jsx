@@ -13,9 +13,9 @@ export function OpeningHero() {
 
   const words = [
     { text: "Generate" },
-    { text: "perfect" },
-    { text: "hashtags" },
-    { text: "effortlessly", className: "text-pink-500 dark:text-pink-500 font-extrabold" },
+    { text: "Perfect" },
+    { text: "Hashtags" },
+    { text: "Effortlessly", className: "text-pink-500 dark:text-pink-500 font-extrabold" },
   ]
 
   useEffect(() => {
