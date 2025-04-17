@@ -54,7 +54,7 @@ export default function SignupForm({ onSwitchToLogin }) {
 
       console.log("Signup Success", response.data);
       setSuccess("Account created successfully!");
-      navigate("/home");
+      navigate("/login");
     } catch (err) {
       console.error(err);
       setError("Something went wrong. Try again");

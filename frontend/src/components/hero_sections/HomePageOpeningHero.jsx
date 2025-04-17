@@ -114,7 +114,7 @@ export function OpeningHero() {
           transition={{ duration: 0.8, delay: 0.6 }}
         >
           Discover trending hashtags tailored to your content and
-          <span className="text-pink-300"> boost your social media reach</span>.
+          <span className="text-pink-400 font-bold"> boost your social media reach</span>.
         </motion.p>
 
         <div className="backdrop-blur-sm bg-black/20 rounded-2xl p-6 mb-8 shadow-[0_0_30px_rgba(236,72,153,0.2)]">

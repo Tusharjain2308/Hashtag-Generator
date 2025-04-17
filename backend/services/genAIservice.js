@@ -31,26 +31,6 @@ Only return a comma-separated list of hashtags, no extra text.
       }
     );
 
-    // Extract hashtags from response
-    // const textResponse =
-    //   response.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    // console.log("Gemini response:", response.data);
-
-    // if (response.data.candidates && response.data.candidates.length > 0) {
-    //   const generatedHashtags = response.data.candidates[0].content;
-    //   console.log(generatedHashtags);
-    // } else {
-    //   console.error("No candidates found in Gemini response");
-    // }
-
-    // // Extract comma-separated hashtags
-    // const hashtags = textResponse
-    //   .split(",")
-    //   .map((tag) => tag.trim())
-    //   .filter((tag) => tag.startsWith("#"));
-
-    // return hashtags;
-
     console.log("Raw Gemini Response:", JSON.stringify(response.data, null, 2));
 
     const candidate = response.data.candidates?.[0];
