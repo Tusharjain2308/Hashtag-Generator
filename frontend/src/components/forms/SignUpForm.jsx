@@ -60,7 +60,7 @@ export default function SignupForm({ onSwitchToLogin }) {
     } catch (err) {
       console.error(err);
       setError(
-        "Password must be at least 8 characters and contain a number, uppercase and lowercase letter."
+        "Password must be at least 8 characters and contain a number, a special character, uppercase and lowercase letter."
       );
     } finally {
       setLoading(false);
