@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Eye, EyeOff } from "lucide-react";
 import { Button } from "../ui/Button.jsx";
 import { Input } from "../ui/Input.jsx";
 import { Label } from "../ui/Label.jsx";
@@ -15,6 +15,8 @@ export default function SignupForm({ onSwitchToLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // 👈 New state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -53,11 +55,13 @@ export default function SignupForm({ onSwitchToLogin }) {
       });
 
       console.log("Signup Success", response.data);
-      setSuccess("Account created successfully!");
+      setSuccess("Account created successfully! Login in to access HashPop");
       navigate("/login");
     } catch (err) {
       console.error(err);
-      setError("Something went wrong. Try again");
+      setError(
+        "Password must be at least 8 characters and contain a number, uppercase and lowercase letter."
+      );
     } finally {
       setLoading(false);
     }
@@ -111,18 +115,18 @@ export default function SignupForm({ onSwitchToLogin }) {
         </div>
 
         <div className="space-y-2">
-          <div className="space-y-2">
-            <Label htmlFor="username" className="text-gray-300">
-              Username
-            </Label>
-            <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-400/20"
-            />
-          </div>
+          <Label htmlFor="username" className="text-gray-300">
+            Username
+          </Label>
+          <Input
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-400/20"
+          />
+        </div>
 
+        <div className="space-y-2">
           <Label htmlFor="signup-email" className="text-gray-300">
             Email
           </Label>
@@ -136,30 +140,46 @@ export default function SignupForm({ onSwitchToLogin }) {
           />
         </div>
 
-        <div className="space-y-2">
+        {/* Password Field */}
+        <div className="space-y-2 relative">
           <Label htmlFor="signup-password" className="text-gray-300">
             Password
           </Label>
           <Input
             id="signup-password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-400/20"
+            className="bg-gray-700/50 border-gray-600 text-white pr-10 placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-400/20"
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute top-[38px] right-3 text-gray-400 hover:text-purple-400"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
 
-        <div className="space-y-2">
+        {/* Confirm Password Field */}
+        <div className="space-y-2 relative">
           <Label htmlFor="confirm-password" className="text-gray-300">
             Confirm password
           </Label>
           <Input
             id="confirm-password"
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-400/20"
+            className="bg-gray-700/50 border-gray-600 text-white pr-10 placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-400/20"
           />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword((prev) => !prev)}
+            className="absolute top-[38px] right-3 text-gray-400 hover:text-purple-400"
+          >
+            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
 
         <AnimatePresence>
