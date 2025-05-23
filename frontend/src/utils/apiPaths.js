@@ -1,4 +1,4 @@
-export const BASE_URL="https://hashpopbackend-env.eba-phdktvkm.ap-south-1.elasticbeanstalk.com"
+export const BASE_URL="http://hashpopbackend-env.eba-phdktvkm.ap-south-1.elasticbeanstalk.com"
 
 export const API_PATHS = {
     AUTH : {
