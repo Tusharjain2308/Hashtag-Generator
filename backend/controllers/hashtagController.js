@@ -66,23 +66,16 @@ const generateHashtags = require("../services/genAIservice"); // Import the AI s
 
 //with redis -
 // 🔑 Generate a hashed Redis cache key
-function generateCacheKey({
-  platform,
-  postType,
-  location,
-  topic,
-  vibe,
-  description,
-}) {
-  const basePrompt = JSON.stringify({
-    platform,
-    postType,
-    location,
-    topic,
-    vibe,
-    description,
+function generateCacheKey({ topic, location, vibe, platform, postType }) {
+  const cacheInput = JSON.stringify({
+    topic: topic?.toLowerCase().trim(),
+    location: location?.toLowerCase().trim(),
+    vibe: vibe?.toLowerCase().trim(),
+    platform: platform?.toLowerCase().trim(),
+    postType: postType?.toLowerCase().trim(),
   });
-  const hash = crypto.createHash("md5").update(basePrompt).digest("hex");
+
+  const hash = crypto.createHash("md5").update(cacheInput).digest("hex");
   return `hashtags:${hash}`;
 }
 
@@ -94,69 +87,71 @@ exports.generateHashtags = async (req, res) => {
     return res.status(400).json({ error: "Please fill all required fields." });
   }
 
-  const MAX_COUNT = 30;
-
+  const MAX_CACHE_COUNT = 30;
   try {
+    // Step 1: Trim base inputs
     const baseInput = {
+      topic: topic?.trim(),
+      location: location?.trim(),
+      vibe: vibe?.trim(),
       platform: platform?.trim(),
       postType: postType?.trim(),
-      location: location?.trim() || "",
-      topic: topic?.trim(),
-      vibe: vibe?.trim(),
-      description: description?.trim() || "",
     };
 
+    // Step 2: Generate cache key (no description or count involved)
     const cacheKey = generateCacheKey(baseInput);
 
-    // 1️⃣ Check cache for MAX_COUNT results
-    const cachedData = await redisClient.get(cacheKey);
+    let allHashtags = [];
+    let servedFromCache = false;
 
-    let finalHashtags = [];
-
-    if (cachedData) {
+    // Step 3: Check cache
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      allHashtags = JSON.parse(cached);
+      servedFromCache = true;
       console.log("✅ Served from Redis Cache");
-      const allHashtags = JSON.parse(cachedData);
-      finalHashtags = allHashtags.slice(0, count);
     } else {
-      // 2️⃣ Generate MAX_COUNT hashtags from AI
-      const aiInput = { ...baseInput, count: MAX_COUNT };
-      const generatedHashtags = await generateHashtags(aiInput);
+      // Step 4: Get from AI with full input (include description here only for AI)
+      const aiInput = {
+        ...baseInput,
+        description: description?.trim(),
+        count: MAX_CACHE_COUNT,
+      };
 
-      if (!generatedHashtags.length) {
+      allHashtags = await generateHashtags(aiInput);
+
+      if (!allHashtags || !allHashtags.length) {
         return res.status(500).json({ error: "No hashtags were generated." });
       }
 
-      // 3️⃣ Cache the MAX_COUNT result for 36 hours (129600 seconds)
-      await redisClient.setEx(
-        cacheKey,
-        129600,
-        JSON.stringify(generatedHashtags)
-      );
-
-      finalHashtags = generatedHashtags.slice(0, count);
+      // Step 5: Cache the result
+      await redisClient.setEx(cacheKey, 129600, JSON.stringify(allHashtags)); // 1.5 days
     }
 
-    // 4️⃣ Save to DB
+    const finalHashtags = allHashtags.slice(0, count);
+
+    // Step 6: Save to MongoDB
     const newHashtag = new Hashtag({
       owner: req.user._id,
       ...baseInput,
+      description,
       count,
       hashtags: finalHashtags,
     });
+
     await newHashtag.save();
 
-    // 5️⃣ Update user history
+    // Step 7: Add to user's history
     await User.findByIdAndUpdate(req.user._id, {
       $push: { history: newHashtag._id },
     });
 
-    // 6️⃣ Return response
     res.status(201).json({
-      message: cachedData
+      message: servedFromCache
         ? "Hashtags served from cache"
         : "Hashtags generated and saved!",
       data: finalHashtags,
-      cached: !!cachedData,
+      cached: servedFromCache,
     });
   } catch (error) {
     console.error("Error in generateHashtags:", error);
