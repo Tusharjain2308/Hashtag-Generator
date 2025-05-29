@@ -1,10 +1,91 @@
 const Hashtag = require("../models/Hashtags");
+const { redisClient } = require("../server");
 const User = require("../models/User");
+const crypto = require("crypto");
 const generateHashtags = require("../services/genAIservice"); // Import the AI service
 
 // @desc    Generate hashtags and save to user's history
 // @route   POST /api/hashtags/generate
 // @access  Private
+// exports.generateHashtags = async (req, res) => {
+//   const { platform, postType, location, topic, vibe, description, count } =
+//     req.body;
+
+//   if (!platform || !postType || !topic || !vibe || !count) {
+//     return res.status(400).json({ error: "Please fill all required fields." });
+//   }
+
+//   try {
+//     const userInput = {
+//       platform,
+//       postType,
+//       location,
+//       topic,
+//       vibe,
+//       description,
+//       count,
+//     };
+
+//     // Call Gemini
+//     const generatedHashtags = await generateHashtags(userInput);
+//     console.log("The hashtags generated are : " , generatedHashtags);
+
+//     if (generatedHashtags.length === 0) {
+//       return res.status(500).json({ error: "No hashtags were generated." });
+//     }
+
+//     // Save to DB
+//     const newHashtag = new Hashtag({
+//       owner: req.user._id,
+//       platform,
+//       postType,
+//       location,
+//       topic,
+//       vibe,
+//       description,
+//       count,
+//       hashtags: generatedHashtags,
+//     });
+
+//     await newHashtag.save();
+
+//     // Push to user history
+//     const user = await User.findById(req.user._id);
+//     user.history.push(newHashtag._id);
+//     await user.save();
+
+//     // ✅ Send only one response
+//     res
+//       .status(201)
+//       .json({ message: "Hashtags generated and saved!", data: generatedHashtags });
+//   } catch (error) {
+//     console.error("Error in generateHashtags:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+//with redis -
+// 🔑 Generate a hashed Redis cache key
+function generateCacheKey({
+  platform,
+  postType,
+  location,
+  topic,
+  vibe,
+  description,
+}) {
+  const basePrompt = JSON.stringify({
+    platform,
+    postType,
+    location,
+    topic,
+    vibe,
+    description,
+  });
+  const hash = crypto.createHash("md5").update(basePrompt).digest("hex");
+  return `hashtags:${hash}`;
+}
+
 exports.generateHashtags = async (req, res) => {
   const { platform, postType, location, topic, vibe, description, count } =
     req.body;
@@ -13,49 +94,70 @@ exports.generateHashtags = async (req, res) => {
     return res.status(400).json({ error: "Please fill all required fields." });
   }
 
+  const MAX_COUNT = 30;
+
   try {
-    const userInput = {
-      platform,
-      postType,
-      location,
-      topic,
-      vibe,
-      description,
-      count,
+    const baseInput = {
+      platform: platform?.trim(),
+      postType: postType?.trim(),
+      location: location?.trim() || "",
+      topic: topic?.trim(),
+      vibe: vibe?.trim(),
+      description: description?.trim() || "",
     };
 
-    // Call Gemini
-    const generatedHashtags = await generateHashtags(userInput);
-    console.log("The hashtags generated are : " , generatedHashtags);
-    
-    if (generatedHashtags.length === 0) {
-      return res.status(500).json({ error: "No hashtags were generated." });
+    const cacheKey = generateCacheKey(baseInput);
+
+    // 1️⃣ Check cache for MAX_COUNT results
+    const cachedData = await redisClient.get(cacheKey);
+
+    let finalHashtags = [];
+
+    if (cachedData) {
+      console.log("✅ Served from Redis Cache");
+      const allHashtags = JSON.parse(cachedData);
+      finalHashtags = allHashtags.slice(0, count);
+    } else {
+      // 2️⃣ Generate MAX_COUNT hashtags from AI
+      const aiInput = { ...baseInput, count: MAX_COUNT };
+      const generatedHashtags = await generateHashtags(aiInput);
+
+      if (!generatedHashtags.length) {
+        return res.status(500).json({ error: "No hashtags were generated." });
+      }
+
+      // 3️⃣ Cache the MAX_COUNT result for 36 hours (129600 seconds)
+      await redisClient.setEx(
+        cacheKey,
+        129600,
+        JSON.stringify(generatedHashtags)
+      );
+
+      finalHashtags = generatedHashtags.slice(0, count);
     }
 
-    // Save to DB
+    // 4️⃣ Save to DB
     const newHashtag = new Hashtag({
       owner: req.user._id,
-      platform,
-      postType,
-      location,
-      topic,
-      vibe,
-      description,
+      ...baseInput,
       count,
-      hashtags: generatedHashtags,
+      hashtags: finalHashtags,
     });
-
     await newHashtag.save();
 
-    // Push to user history
-    const user = await User.findById(req.user._id);
-    user.history.push(newHashtag._id);
-    await user.save();
+    // 5️⃣ Update user history
+    await User.findByIdAndUpdate(req.user._id, {
+      $push: { history: newHashtag._id },
+    });
 
-    // ✅ Send only one response
-    res
-      .status(201)
-      .json({ message: "Hashtags generated and saved!", data: generatedHashtags });
+    // 6️⃣ Return response
+    res.status(201).json({
+      message: cachedData
+        ? "Hashtags served from cache"
+        : "Hashtags generated and saved!",
+      data: finalHashtags,
+      cached: !!cachedData,
+    });
   } catch (error) {
     console.error("Error in generateHashtags:", error);
     res.status(500).json({ error: error.message });
@@ -145,7 +247,7 @@ exports.getAccountInformation = async (req, res) => {
       history: user.history, // this includes all hashtags generated
     };
 
-    console.log("Account info",accountInfo);
+    console.log("Account info", accountInfo);
     res.status(200).json(accountInfo);
   } catch (error) {
     console.error("Error in getAccountInformation:", error);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   motion,
   useMotionTemplate,
@@ -9,6 +9,7 @@ import axios from "axios";
 import { Canvas } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
 import { API_PATHS } from "../../utils/apiPaths.js";
+import debounce from "lodash.debounce";
 
 const COLORS_TOP = ["#13FFAA", "#1E67C6", "#CE84CF", "#DD335C"];
 
@@ -23,37 +24,74 @@ export default function HashtagForm() {
     count: 10,
   });
 
+  const cleanFormData = {
+    ...formData,
+    platform: formData.platform.trim(),
+    postType: formData.postType.trim(),
+    location: formData.location?.trim() || "",
+    topic: formData.topic.trim(),
+    vibe: formData.vibe.trim(),
+    description: formData.description?.trim() || "",
+  };
+
   const [hashtags, setHashtags] = useState("");
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [latency, setLatency] = useState(null);
+  const [servedFromCache, setServedFromCache] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    debouncedUpdateForm(name, value);
   };
+
+  const debouncedUpdateForm = useMemo(
+    () =>
+      debounce((name, value) => {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+      }, 300),
+    []
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setCopied(false);
+
+    const start = performance.now();
+
     try {
-      const token = localStorage.getItem("token"); // Adjust based on your storage strategy
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        API_PATHS.HASHTAGS.GENERATE,
+        cleanFormData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-      const response = await axios.post(API_PATHS.HASHTAGS.GENERATE, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+      const end = performance.now();
+      setLatency((end - start).toFixed(2));
+      console.log(`⏱️ API Latency: ${(end - start).toFixed(2)} ms`);
       setHashtags(response?.data?.data?.join(" ") || "No hashtags generated.");
+      setServedFromCache(response?.data?.cached ?? null);
     } catch (error) {
-      setHashtags("Something went wrong.");
+      setHashtags("❌ Something went wrong.");
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Aurora Background Animation Logic
+  const handleCopy = () => {
+    navigator.clipboard.writeText(hashtags);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Aurora background animation
   const color = useMotionValue(COLORS_TOP[0]);
+  const backgroundImage = useMotionTemplate`radial-gradient(125% 125% at 50% 0%, #020617 50%, ${color})`;
 
   useEffect(() => {
     animate(color, COLORS_TOP, {
@@ -64,21 +102,17 @@ export default function HashtagForm() {
     });
   }, []);
 
-  const backgroundImage = useMotionTemplate`radial-gradient(125% 125% at 50% 0%, #020617 50%, ${color})`;
-
   return (
     <motion.section
       style={{ backgroundImage }}
       className="relative min-h-screen py-24 px-4 sm:px-10 text-white overflow-hidden"
     >
-      {/* Star Background */}
       <div className="absolute inset-0 z-0">
         <Canvas>
           <Stars radius={50} count={2500} factor={4} fade speed={2} />
         </Canvas>
       </div>
 
-      {/* Form Content */}
       <div className="relative z-10 max-w-4xl mx-auto">
         <motion.h2
           className="text-center text-4xl sm:text-5xl font-bold mb-12 text-white drop-shadow-md"
@@ -97,12 +131,7 @@ export default function HashtagForm() {
           transition={{ duration: 1 }}
         >
           <FormRow label="Platform">
-            <StyledSelect
-              name="platform"
-              value={formData.platform}
-              onChange={handleChange}
-              required autoFocus
-            >
+            <StyledSelect name="platform" onChange={handleChange} required>
               <option value="">Select platform</option>
               <option>Instagram</option>
               <option>Twitter</option>
@@ -112,12 +141,7 @@ export default function HashtagForm() {
           </FormRow>
 
           <FormRow label="Post Type">
-            <StyledSelect
-              name="postType"
-              value={formData.postType}
-              onChange={handleChange}
-              required
-            >
+            <StyledSelect name="postType" onChange={handleChange} required>
               <option value="">Choose type</option>
               <option>Reel</option>
               <option>Story</option>
@@ -132,9 +156,8 @@ export default function HashtagForm() {
             <StyledInput
               type="text"
               name="location"
-              value={formData.location}
-              onChange={handleChange}
               placeholder="e.g. Delhi"
+              onChange={handleChange}
             />
           </FormRow>
 
@@ -142,10 +165,9 @@ export default function HashtagForm() {
             <StyledInput
               type="text"
               name="topic"
-              value={formData.topic}
-              onChange={handleChange}
               required
               placeholder="e.g. Travel, Fashion"
+              onChange={handleChange}
             />
           </FormRow>
 
@@ -153,10 +175,9 @@ export default function HashtagForm() {
             <StyledInput
               type="text"
               name="vibe"
-              value={formData.vibe}
-              onChange={handleChange}
               required
               placeholder="e.g. Chill, Aesthetic"
+              onChange={handleChange}
             />
           </FormRow>
 
@@ -164,9 +185,8 @@ export default function HashtagForm() {
             <StyledTextarea
               name="description"
               rows={3}
-              value={formData.description}
-              onChange={handleChange}
               placeholder="Describe your post..."
+              onChange={handleChange}
             />
           </FormRow>
 
@@ -176,7 +196,7 @@ export default function HashtagForm() {
               name="count"
               min="1"
               max="30"
-              value={formData.count}
+              defaultValue={10}
               onChange={handleChange}
               className="w-full accent-pink-500"
             />
@@ -204,27 +224,51 @@ export default function HashtagForm() {
             <p className="text-pink-400 text-xl font-extrabold mb-2">
               Generated Hashtags
             </p>
+            {latency && (
+              <p className="text-sm text-gray-400 mt-2">
+                API responded in {latency} ms
+              </p>
+            )}
+
             <p
               className="cursor-pointer font-bold text-2xl text-white break-words"
-              onClick={() => navigator.clipboard.writeText(hashtags)}
+              onClick={handleCopy}
               title="Click to copy hashtags"
             >
               {hashtags}
             </p>
-            <p className="text-sm text-pink-300 mt-2">(Click on the hashtags to copy)</p>
+            <p className="text-sm text-pink-300 mt-2">
+              {copied ? "✅ Copied!" : "(Click to copy hashtags)"}
+            </p>
+
+            {servedFromCache !== null && (
+              <p className="text-sm text-gray-400 mt-1">
+                🔁{" "}
+                {servedFromCache
+                  ? "Served from Cache"
+                  : "Generated via AI"}
+              </p>
+            )}
           </motion.div>
         )}
-
       </div>
 
       <div className="mt-8 text-center text-gray-400 text-sm">
-          <p>© 2025 HashPop. All rights reserved.</p>
+        <p>© 2025 HashPop. All rights reserved.</p>
+      </div>
+
+      {loading && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+          <div className="text-white text-xl animate-pulse">
+            ✨ Generating...
+          </div>
         </div>
+      )}
     </motion.section>
   );
 }
 
-// Label-Input Row
+// Subcomponents (unchanged except layout tweaks)
 function FormRow({ label, children }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -236,7 +280,6 @@ function FormRow({ label, children }) {
   );
 }
 
-// Styled Components
 function StyledInput(props) {
   return (
     <input
