@@ -8,7 +8,6 @@ export default function LoginPage() {
         <NavbarDemo />
       </div>
 
-      {/* Add vertical spacing */}
       <div className="">
         <AccountInfo />
       </div>

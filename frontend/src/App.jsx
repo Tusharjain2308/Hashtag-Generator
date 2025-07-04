@@ -26,7 +26,7 @@ function App() {
 
 export default App;
 
-// 🔁 Method for Root initial redirection
+// Method for Root initial redirection
 const Root = () => {
   const isAuthenticated = !!localStorage.getItem("token");
 

@@ -239,7 +239,7 @@ exports.getAccountInformation = async (req, res) => {
       name: user.firstname || "",
       email: user.email,
       createdAt: user.createdAt,
-      history: user.history, // this includes all hashtags generated
+      history: user.history, 
     };
 
     console.log("Account info", accountInfo);

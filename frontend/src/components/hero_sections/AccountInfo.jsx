@@ -28,7 +28,7 @@ const AccountInfo = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [copiedId, setCopiedId] = useState(null);
   const vantaRef = useRef(null);
-  const itemsPerPage = 1; // Show one history item per page
+  const itemsPerPage = 1;
 
   useEffect(() => {
     const fetchAccountInfo = async () => {
@@ -43,7 +43,6 @@ const AccountInfo = () => {
       } catch (err) {
         console.error("Error details:", err);
         if (err.response) {
-          // use the `error` field that your API returns
           setError(
             `Backend error: ${err.response.data.error || "Unknown error"}`
           );

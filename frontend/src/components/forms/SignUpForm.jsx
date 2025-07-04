@@ -16,7 +16,7 @@ export default function SignupForm({ onSwitchToLogin }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // 👈 New state
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");

@@ -1,4 +1,4 @@
-export const BASE_URL="https://hashtag-generator-backend.onrender.com"; // Local development URL
+export const BASE_URL="https://hashtag-generator-backend.onrender.com"; 
 //http://hashpopbackend-env.eba-phdktvkm.ap-south-1.elasticbeanstalk.com
 //
 export const API_PATHS = {
