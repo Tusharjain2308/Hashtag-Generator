@@ -55,29 +55,35 @@ export default function HashtagForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    debouncedUpdateForm.flush();
     setLoading(true);
     setCopied(false);
+
+    const cleaned = {
+      ...formData,
+      platform: formData.platform.trim(),
+      postType: formData.postType.trim(),
+      location: formData.location?.trim() || "",
+      topic: formData.topic.trim(),
+      vibe: formData.vibe.trim(),
+      description: formData.description?.trim() || "",
+    };
 
     const start = performance.now();
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post(
-        API_PATHS.HASHTAGS.GENERATE,
-        cleanFormData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await axios.post(API_PATHS.HASHTAGS.GENERATE, cleaned, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const end = performance.now();
       setLatency((end - start).toFixed(2));
-      console.log(`⏱️ API Latency: ${(end - start).toFixed(2)} ms`);
       setHashtags(response?.data?.data?.join(" ") || "No hashtags generated.");
       setServedFromCache(response?.data?.cached ?? null);
     } catch (error) {
       setHashtags("❌ Something went wrong.");
-      console.error(error);
+      console.error("API error:", error.response?.data || error.message);
     } finally {
       setLoading(false);
     }
@@ -243,10 +249,7 @@ export default function HashtagForm() {
 
             {servedFromCache !== null && (
               <p className="text-sm text-gray-400 mt-1">
-                🔁{" "}
-                {servedFromCache
-                  ? "Served from Cache"
-                  : "Generated via AI"}
+                🔁 {servedFromCache ? "Served from Cache" : "Generated via AI"}
               </p>
             )}
           </motion.div>
@@ -268,7 +271,6 @@ export default function HashtagForm() {
   );
 }
 
-// Subcomponents (unchanged except layout tweaks)
 function FormRow({ label, children }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-4">

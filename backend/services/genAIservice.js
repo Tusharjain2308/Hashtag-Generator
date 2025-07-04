@@ -42,7 +42,7 @@ Only return a comma-separated list of hashtags, no extra text.
       .map((tag) => tag.trim())
       .filter((tag) => tag.startsWith("#"));
 
-    // console.log("hashtags generated are : ",hashtags);
+    console.log("hashtags generated are : ",hashtags);
     return hashtags;
   } catch (error) {
     console.error("Gemini API Error:", error?.response?.data || error.message);
